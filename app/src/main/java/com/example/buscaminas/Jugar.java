@@ -1,9 +1,9 @@
 package com.example.buscaminas;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -17,23 +17,32 @@ import android.widget.Toast;
 
 public class Jugar extends AppCompatActivity{
 
-    Casilla[][] casillas = new Casilla[8][8];
+    Casilla[][] casillas;
     private Tablero tablero;
     boolean clickable;
+    int numeroFilas;
+    int minas, totalMinas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jugar);
         RelativeLayout layout = findViewById(R.id.layout);
+        numeroFilas = getIntent().getExtras().getInt("casillas");
+        minas = getIntent().getExtras().getInt("bombas");
+        totalMinas = minas;
+        Log.i("casillas",numeroFilas+"");
+        Log.i("bombas",minas+"");
+
         tablero = new Tablero(this);
         layout.addView(tablero);
 
         tablero.IniciarJuego();
     }
 
-    public void botonReiniciar(View view) {
-        tablero.IniciarJuego();
+    public void botonReiniciar(View view){
+        Intent intent = new Intent(getApplicationContext(), activity_niveles.class);
+        startActivity(intent);
     }
 
     class Tablero extends View implements View.OnTouchListener{
@@ -64,17 +73,17 @@ public class Jugar extends AppCompatActivity{
             int top = 353;
             int right = ancho-29;
             int bottom = alto-140;
-            int ladoCasilla = 128;
+            int ladoCasilla = 1024 / numeroFilas;
             int posLeft = 0;
-            int posRight = ladoCasilla*7;
+            int posRight = ladoCasilla*(numeroFilas-1);
             int posTop = 0;
-            int posBottom = ladoCasilla*7;
+            int posBottom = ladoCasilla*(numeroFilas-1);
             canvas.drawRect(rect1,pincelBorde);
 
             pincelBorde.setStrokeWidth(3);
 
-            for(int i = 0; i<8;i++){
-                for(int j=0;j<8;j++){
+            for(int i = 0; i<numeroFilas;i++){
+                for(int j=0;j<numeroFilas;j++){
                     RectF rect2 = new RectF(left+posLeft,top+posTop,right-posRight,bottom-posBottom);
                     canvas.drawRect(rect2,pincelBorde);
                     if(casillas[i][j].destapada){
@@ -85,11 +94,11 @@ public class Jugar extends AppCompatActivity{
                     casillas[i][j].PosicionCasilla(left+posLeft,top+posTop,right-posRight,bottom-posBottom);
                     posLeft += ladoCasilla;
                     posRight -= ladoCasilla;
-                    if(posLeft == ladoCasilla*8){
+                    if(posLeft == ladoCasilla*numeroFilas){
                         posLeft = 0;
                     }
-                    if(posRight == -128) {
-                        posRight = ladoCasilla * 7;
+                    if(posRight == -ladoCasilla) {
+                        posRight = ladoCasilla * (numeroFilas-1);
                     }
 
                     if(casillas[i][j].destapada) {
@@ -151,6 +160,7 @@ public class Jugar extends AppCompatActivity{
         }
 
         public void IniciarJuego(){
+            casillas = new Casilla[numeroFilas][numeroFilas];
             clickable = true;
             Log.i("coords","iniciar");
             crearBombas();
@@ -162,17 +172,16 @@ public class Jugar extends AppCompatActivity{
         public void crearBombas()
         {
             Log.i("coords","crear");
-            for(int i=0;i<8;i++) {
-                for(int j=0;j<8;j++) {
+            for(int i=0;i<numeroFilas;i++) {
+                for(int j=0;j<numeroFilas;j++) {
                     casillas[i][j] = new Casilla();
                 }
             }
-            int minas = 10;
             int numX, numY;
             while(minas>0)
             {
-                numX = (int) Math.floor(Math.random()*8);
-                numY = (int) Math.floor(Math.random()*8);
+                numX = (int) Math.floor(Math.random()*numeroFilas);
+                numY = (int) Math.floor(Math.random()*numeroFilas);
                 if(!casillas[numX][numY].contenido.equals("B"))
                 {
                     casillas[numX][numY].contenido = "B";
@@ -184,9 +193,9 @@ public class Jugar extends AppCompatActivity{
         public void rellenarCasillas()
         {
             Log.i("coords","rellenar");
-            for(int i=0;i<8;i++)
+            for(int i=0;i<numeroFilas;i++)
             {
-                for(int j=0;j<8;j++)
+                for(int j=0;j<numeroFilas;j++)
                 {
                     if(!casillas[i][j].contenido.equals("B")) {
                         casillas[i][j].contenido = numeroBombas(i,j);
@@ -209,7 +218,7 @@ public class Jugar extends AppCompatActivity{
                     numeroBombas++;
                 }
             }
-            if(fila-1 >=0 && columna+1 <= 7) {
+            if(fila-1 >=0 && columna+1 <= numeroFilas-1) {
                 if(casillas[fila-1][columna+1].contenido.equals("B")) {
                     numeroBombas++;
                 }
@@ -219,22 +228,22 @@ public class Jugar extends AppCompatActivity{
                     numeroBombas++;
                 }
             }
-            if(columna+1 <= 7) {
+            if(columna+1 <= numeroFilas-1) {
                 if(casillas[fila][columna+1].contenido.equals("B")) {
                     numeroBombas++;
                 }
             }
-            if(fila+1 <=7 && columna-1 >= 0) {
+            if(fila+1 <=numeroFilas-1 && columna-1 >= 0) {
                 if(casillas[fila+1][columna-1].contenido.equals("B")) {
                     numeroBombas++;
                 }
             }
-            if(fila+1 <=7) {
+            if(fila+1 <=numeroFilas-1) {
                 if(casillas[fila+1][columna].contenido.equals("B")) {
                     numeroBombas++;
                 }
             }
-            if(fila+1 <=7 && columna+1 <= 7) {
+            if(fila+1 <=numeroFilas-1 && columna+1 <= numeroFilas-1) {
                 if(casillas[fila+1][columna+1].contenido.equals("B")) {
                     numeroBombas++;
                 }
@@ -245,7 +254,7 @@ public class Jugar extends AppCompatActivity{
 
         public void destaparAlrededores(int fila, int columna){
             Log.i("coords","destapar");
-            if(fila >= 0 && fila < 8 && columna >= 0 && columna < 8){
+            if(fila >= 0 && fila < numeroFilas && columna >= 0 && columna < numeroFilas){
                 Log.i("coords",""+casillas[fila][columna].contenido+"/"+casillas[fila][columna].destapada);
                 if(casillas[fila][columna].contenido.equals("0") && !casillas[fila][columna].destapada){
                     Log.i("coords","hola");
@@ -276,8 +285,8 @@ public class Jugar extends AppCompatActivity{
                 int x = (int) event.getX();
                 int y = (int) event.getY();
 
-                for (int i = 0; i < 8; i++) {
-                    for (int j = 0; j < 8; j++) {
+                for (int i = 0; i < numeroFilas; i++) {
+                    for (int j = 0; j < numeroFilas; j++) {
                         if (casillas[i][j].clickDentroCasilla(x, y)) {
 
                             if (casillas[i][j].contenido.equals("B")) {
@@ -308,15 +317,15 @@ public class Jugar extends AppCompatActivity{
         public boolean ganar(){
             Log.i("coords","ganar");
             int contador = 0;
-            for(int i=0;i<8;i++){
-                for(int j=0;j<8;j++){
+            for(int i=0;i<numeroFilas;i++){
+                for(int j=0;j<numeroFilas;j++){
                     if(casillas[i][j].destapada){
                         contador++;
                     }
                 }
             }
 
-            if(contador == (8*8)-10){
+            if(contador == (numeroFilas*numeroFilas)-totalMinas){
                 return true;
             }
             else{
@@ -325,8 +334,8 @@ public class Jugar extends AppCompatActivity{
         }
 
         public void terminarPartida(){
-            for(int i=0;i<8;i++){
-                for(int j=0;j<8;j++){
+            for(int i=0;i<numeroFilas;i++){
+                for(int j=0;j<numeroFilas;j++){
                     if(casillas[i][j].contenido.equals("B")){
                         casillas[i][j].destapada = true;
                     }

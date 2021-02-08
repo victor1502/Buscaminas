@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void botonJugar(View view) {
-        Intent intent = new Intent(getApplicationContext(), Jugar.class);
+        Intent intent = new Intent(getApplicationContext(), activity_niveles.class);
         startActivity(intent);
     }
 
